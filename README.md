@@ -1,6 +1,6 @@
 # asana-task-id
 
-Adds a project code prefix to new tasks added in Asana using a service deployed to [Vercel](https://vercel.com).
+Folk from https://github.com/oppielabs/asana-task-id
 
 ![Project Code Prefix Example](./example.gif)
 
@@ -16,13 +16,7 @@ Install package dependencies
 yarn
 ```
 
-### Deploy Application
-
-```sh
-now --prod
-```
-
-### Add Environment Variables
+### Run
 
 Rename the `.env.example` file to `.env` and update with the required values.
 
@@ -32,22 +26,7 @@ ASANA_PROJECT_ID=<Asana Project ID>
 ASANA_PROJECT_PREFIX=<Project Task Prefix>
 ```
 
-Add the same [environment variable values](https://vercel.com/blog/environment-variables-ui) to the Vercel project.
-
-```sh
-now env add ASANA_ACCESS_TOKEN production
-# Add ASANA_ACCESS_TOKEN value
-```
-
-```sh
-now env add ASANA_PROJECT_ID production
-# Add ASANA_PROJECT_ID value
-```
-
-```sh
-now env add ASANA_PROJECT_PREFIX production
-# Add ASANA_PROJECT_PREFIX value
-```
+Run `yarn start`
 
 ### Register Hook
 
@@ -70,7 +49,7 @@ yarn run register --url https://<PROJECT_URL>.now.sh/api/asana
 Start the development server using the Vercel CLI.
 
 ```sh
-now dev
+yarn start
 ```
 
 Forward the local port to the outside using `ngrok`.
@@ -82,7 +61,7 @@ ngrok http 3000
 Register the `ngrok` tunnel with the Asana webhook functionality.
 
 ```sh
-yarn run register --url https://<NGROK_URL>.ngrok.io/api/asana
+yarn run register --url https://<NGROK_URL>.ngrok.io
 ```
 
 ## Operations
@@ -92,13 +71,13 @@ yarn run register --url https://<NGROK_URL>.ngrok.io/api/asana
 ### Get List of Existing Webhooks
 
 ```
-yarn run get
+yarn get
 ```
 
 ### Delete Webhook by Id
 
 ```
-yarn run delete --webhookId 1178960809589035
+yarn delete --webhookId 1178960809589035
 ```
 
 ## FAQ

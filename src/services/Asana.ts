@@ -16,9 +16,11 @@ export const createHook = async (projectId: string, url: string) => {
 
 export const handleHook = async (body: { events: AsanaEvent[] }) => {
   const isWatchChangeEvents = process.env.WATCH_CHANGES === "true";
-  const isActiveEvent = (x: AsanaEvent) => x.action === "added" || (isWatchChangeEvents && x.action === "changed");
+  const isActiveEvent = (x: AsanaEvent) =>
+    x.action === "added" || (isWatchChangeEvents && x.action === "changed");
   const filterTaskResource = (x: AsanaEvent) =>
-    x.resource.resource_type === "task" && (!x.parent || x.parent.resource_type === "project");
+    x.resource.resource_type === "task" &&
+    (!x.parent || x.parent.resource_type === "project");
 
   const activeTasks = body.events
     .filter(isActiveEvent)
@@ -26,18 +28,26 @@ export const handleHook = async (body: { events: AsanaEvent[] }) => {
 
   if (activeTasks && activeTasks.length) {
     const client = registerClient();
-    const project = await client.projects.findById(process.env.ASANA_PROJECT_ID);
+    const project = await client.projects.findById(
+      process.env.ASANA_PROJECT_ID
+    );
     const currentId = await getProjectCurrentId(project);
 
     let updatedId = currentId;
     for (let task of activeTasks) {
-      const currentTask = await client.tasks.findById(task.resource.gid);
-      const isTaskPrefixAlreadyExists = !!currentTask.name.match(TASK_PREFIX_PATTERN);
-      if (!isTaskPrefixAlreadyExists) {
-        updatedId++;
-        const name = createUpdatedTaskName(currentTask, updatedId);
-        await client.tasks.update(task.resource.gid, { name });
-        console.log(`Task updated: '${name}'`);
+      try {
+        const currentTask = await client.tasks.findById(task.resource.gid);
+        const isTaskPrefixAlreadyExists = !!currentTask.name.match(
+          TASK_PREFIX_PATTERN
+        );
+        if (!isTaskPrefixAlreadyExists) {
+          updatedId++;
+          const name = createUpdatedTaskName(currentTask, updatedId);
+          await client.tasks.update(task.resource.gid, { name });
+          console.log(`Task updated: '${name}'`);
+        }
+      } catch (err) {
+        console.warn(err);
       }
     }
 
@@ -49,12 +59,12 @@ export const getHooks = async (workspaceId: string) => {
   const client = registerClient();
   const response = await client.webhooks.getAll(workspaceId);
   return response.data;
-}
+};
 
 export const deleteHook = async (webhookId: string) => {
   const client = registerClient();
   await client.webhooks.deleteById(webhookId);
-}
+};
 
 export const getProjectCurrentId = async (
   project: Asana.resources.Projects.Type
@@ -63,10 +73,7 @@ export const getProjectCurrentId = async (
   return match ? parseInt(match[1], 10) : 0;
 };
 
-export const setProjectCurrentId = async (
-  client: Asana.Client,
-  id: number,
-) => {
+export const setProjectCurrentId = async (client: Asana.Client, id: number) => {
   // TODO: Regex update to the existing notes value instead of overwrite
   const notes = `[${id}]`;
   await client.projects.update(process.env.ASANA_PROJECT_ID, { notes });
@@ -74,7 +81,7 @@ export const setProjectCurrentId = async (
 
 export const createUpdatedTaskName = (
   currentTask: Asana.resources.Tasks.Type,
-  updatedId: number,
+  updatedId: number
 ): string => {
   const taskPrefix = `[${process.env.ASANA_PROJECT_PREFIX}-${updatedId}]`;
   return `${taskPrefix} ${currentTask.name}`;
