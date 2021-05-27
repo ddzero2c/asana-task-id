@@ -9,7 +9,7 @@ app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 app.post("/", async (req, res) => {
-  console.log(`request body -> ${JSON.stringify(req.body, null, 2)}`);
+  console.log(`request body -> ${JSON.stringify(req.body)}`);
   if (req.body && req.body.events && req.body.events.length) {
     await Asana.handleHook(req.body);
   }
