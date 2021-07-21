@@ -4,7 +4,9 @@ import * as Asana from "asana";
 const TASK_PREFIX_PATTERN = /\[(.+?)\]/;
 
 const registerClient = (): Asana.Client => {
-  return Asana.Client.create().useAccessToken(process.env.ASANA_ACCESS_TOKEN);
+  return Asana.Client.create({
+    defaultHeaders: { "asana-enable": "new_user_task_lists" },
+  }).useAccessToken(process.env.ASANA_ACCESS_TOKEN);
 };
 
 export const createHook = async (projectId: string, url: string) => {
@@ -38,9 +40,8 @@ export const handleHook = async (body: { events: AsanaEvent[] }) => {
     for (let task of activeTasks) {
       try {
         const currentTask = await client.tasks.findById(task.resource.gid);
-        const isTaskPrefixAlreadyExists = !!currentTask.name.match(
-          TASK_PREFIX_PATTERN
-        );
+        const isTaskPrefixAlreadyExists =
+          !!currentTask.name.match(TASK_PREFIX_PATTERN);
         if (!isTaskPrefixAlreadyExists) {
           updatedId++;
           const name = createUpdatedTaskName(currentTask, updatedId);
